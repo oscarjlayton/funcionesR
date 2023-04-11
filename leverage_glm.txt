@@ -1,0 +1,24 @@
+
+leverage_glm <- function(fit.model, xlab, ylab, main, pch, col, identify, out){
+	if(class(fit.model)[1] != "glm" & class(fit.model)[1] != "lm" & class(fit.model)[1] != "negbin") 
+	  stop("Only lm-, glm- and glm.nb-type objects are supported!!",call.=FALSE)
+	if(missingArg(out)) out <- FALSE   
+	X <- model.matrix(fit.model)
+	n <- nrow(X)
+	p <- ncol(X)
+	if(class(fit.model)[1] == "lm"){
+	  if(any(fit.model$weights == 0)) stop("Only positive values of weights are allowed!!",call.=FALSE)
+	  if(is.null(fit.model$weights)) w <- matrix(1,n,1) else w <- fit.model$weights
+	}
+	Xw <- X*matrix(sqrt(w),n,p)
+	salida <- svd(Xw)
+	h <- apply(salida$u^2,1,sum)
+    if(missingArg(xlab))  xlab="Index"
+    if(missingArg(ylab))  ylab="Leverage"
+    if(missingArg(main))  main=" "
+    if(missingArg(pch))   pch=20
+    if(missingArg(col))   col="black"
+    plot(h, xlab=xlab, ylab=ylab, main=main, pch=pch, col=col, type="h")
+    if(!missingArg(identify)) identify(h, n=identify)
+    if(out) return(stat=h)
+}
